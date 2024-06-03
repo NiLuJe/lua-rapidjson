@@ -151,7 +151,7 @@ static int Document_save(lua_State* L) {
 	bool pretty = luax::optboolfield(L, 3, "pretty", false);
 
 	FILE* fp = file::open(filename, "wb");
-	char buffer[512];
+	char buffer[4096];
 	FileWriteStream fs(fp, buffer, sizeof(buffer));
 
 	if (pretty) {

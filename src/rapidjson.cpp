@@ -117,7 +117,7 @@ static int json_load(lua_State* L)
 	if (fp == NULL)
 		luaL_error(L, "error while open file: %s", filename);
 
-	char buffer[512];
+	char buffer[4096];
 	FileReadStream fs(fp, buffer, sizeof(buffer));
 	AutoUTFInputStream<unsigned, FileReadStream> eis(fs);
 
@@ -359,7 +359,7 @@ static int json_dump(lua_State* L)
 	if (fp == NULL)
 		luaL_error(L, "error while open file: %s", filename);
 
-	char buffer[512];
+	char buffer[4096];
 	FileWriteStream fs(fp, buffer, sizeof(buffer));
 	encoder.encode(L, &fs, 1);
 	fclose(fp);
