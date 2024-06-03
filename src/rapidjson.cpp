@@ -13,6 +13,11 @@
 #  define RAPIDJSON_SSE2
 #endif
 
+// Ditto for NEON on arm
+#if defined(__ARM_NEON)
+# define RAPIDJSON_NEON
+#endif
+
 #include "rapidjson/document.h"
 #include "rapidjson/encodedstream.h"
 #include "rapidjson/error/en.h"
