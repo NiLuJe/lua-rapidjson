@@ -34,6 +34,7 @@
 
 #include "Userdata.hpp"
 #include "values.hpp"
+#include "calibre.hpp"
 #include "luax.hpp"
 #include "file.hpp"
 #include "StringStream.hpp"
@@ -120,13 +121,31 @@ static int json_load(lua_State* L)
 	const char* filename = luaL_checklstring(L, 1, NULL);
 	FILE* fp = file::open(filename, "rb");
 	if (fp == NULL)
-		luaL_error(L, "error while open file: %s", filename);
+		luaL_error(L, "error when opening file: %s", filename);
 
 	char buffer[4096];
 	FileReadStream fs(fp, buffer, sizeof(buffer));
 	AutoUTFInputStream<unsigned, FileReadStream> eis(fs);
 
 	int n = values::pushDecoded(L, eis);
+
+	fclose(fp);
+	return n;
+}
+
+static int json_load_calibre(lua_State* L)
+{
+	const char* filename = luaL_checklstring(L, 1, NULL);
+	FILE* fp = file::open(filename, "rb");
+	if (fp == NULL) {
+		luaL_error(L, "error when opening file: %s", filename);
+	}
+
+	char buffer[4096];
+	FileReadStream fs(fp, buffer, sizeof(buffer));
+	AutoUTFInputStream<unsigned, FileReadStream> eis(fs);
+
+	int n = calibre::pushDecoded(L, eis);
 
 	fclose(fp);
 	return n;
@@ -392,6 +411,9 @@ static const luaL_Reg methods[] = {
 	// file <--> lua table
 	{ "load", json_load },
 	{ "dump", json_dump },
+
+	// load a calibre metadata file
+	{ "load_calibre", json_load_calibre },
 
 	// special functions
 	{ "object", json_object },
