@@ -198,7 +198,7 @@ namespace values {
 				fn_(L, this);
 			}
 
-			int index_;
+			rapidjson::SizeType index_;
 			void(*fn_)(lua_State* L, Ctx* ctx);
 		private:
 			explicit Ctx(void(*f)(lua_State* L, Ctx* ctx)) : index_(0), fn_(f) {}

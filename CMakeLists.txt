@@ -66,6 +66,7 @@ set(SOURCES
     src/rapidjson.cpp
     src/values.cpp
     src/values.hpp
+    src/calibre.hpp
 )
 
 add_library(lua-rapidjson MODULE ${SOURCES})
