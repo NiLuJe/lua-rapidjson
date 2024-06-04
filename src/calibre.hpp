@@ -19,7 +19,7 @@ namespace calibre {
 	 * Handle json SAX events and create relevant Lua objects.
 	 */
 	struct ToLuaHandler {
-		explicit ToLuaHandler(lua_State* aL) : L(aL) { stack_.reserve(32); }
+		explicit ToLuaHandler(lua_State* aL) : required_field(false), depth(0), L(aL) { stack_.reserve(32); }
 
 		bool Null() {
 			if (!required_field) {
@@ -116,12 +116,22 @@ namespace calibre {
 			return true;
 		}
 		bool StartObject() {
+			depth++;
+			printf("StartObject() @ depth %d\n", depth);
+			// We only want the book object, not any of the nested ones.
+			if (depth > 1) {
+				return true;
+			}
+
 			if (!lua_checkstack(L, 1)) {
 				return false;
 			}
 
 			// We know how exactly many key-value pairs we'll want
 			lua_createtable(L, 0, required_fields.size());
+			// Mark as object.
+			luaL_getmetatable(L, "json.object");
+			lua_setmetatable(L, -2);
 
 			stack_.push_back(context_);
 			context_ = Ctx::Object();
@@ -129,22 +139,36 @@ namespace calibre {
 		}
 		bool Key(const char* str, rapidjson::SizeType length, bool copy) const {
 			// We only care about a few specific fields
+			// NOTE: contains is C++20 ;'(. But it's a set, so this can only ever be 0 or 1.
+			printf("Key = `%.*s`\n", length, str);
 			if (required_fields.count(str)) {
 				lua_pushlstring(L, str, length);
 				required_field = true;
 			} else {
+				// FIXME: Not pushing this broke all the things and trashed the stack...
+				//lua_pushlstring(L, str, length);
 				required_field = false;
 			}
 			return true;
 		}
 		bool EndObject(rapidjson::SizeType memberCount) {
+			depth--;
+			printf("EndObject(%zu)\n", memberCount);
+
+			// We only create the top-level object
+			if (depth > 0) {
+				return true;
+			}
+
 			context_ = stack_.back();
 			stack_.pop_back();
 			context_.submit(L);
 			return true;
 		}
 		bool StartArray() {
-			if (!required_field) {
+			printf("StartArray() @ depth %zu\n", depth);
+			// We want the top-level array ;).
+			if (!required_field && depth > 0) {
 				return true;
 			}
 
@@ -153,13 +177,17 @@ namespace calibre {
 			}
 
 			lua_newtable(L);
+			// Mark as array.
+			luaL_getmetatable(L, "json.array");
+			lua_setmetatable(L, -2);
 
 			stack_.push_back(context_);
 			context_ = Ctx::Array();
 			return true;
 		}
 		bool EndArray(rapidjson::SizeType elementCount) {
-			if (!required_field) {
+			printf("EndArray(%zu)\n", elementCount);
+			if (!required_field && depth > 0) {
 				return true;
 			}
 
@@ -204,23 +232,20 @@ namespace calibre {
 
 			static void objectFn(lua_State* L, Ctx* ctx)
 			{
-				lua_rawset(L, -2);
+				lua_rawset(L, -3);
 			}
 
 			static void arrayFn(lua_State* L, Ctx* ctx)
 			{
-				lua_rawseti(L, -1, ++ctx->index_);
+				lua_rawseti(L, -2, ++ctx->index_);
 			}
 			static void topFn(lua_State* L, Ctx* ctx)
 			{
 			}
 		};
 
-		lua_State* L;
-		std::vector <Ctx> stack_;
-		Ctx context_;
-
-		mutable bool required_field = false;
+		mutable bool required_field;
+		size_t depth;
 		const std::unordered_set<std::string> required_fields {
 			"authors",
 			"last_modified",
@@ -232,6 +257,10 @@ namespace calibre {
 			"title",
 			"uuid ",
 		};
+
+		lua_State* L;
+		std::vector <Ctx> stack_;
+		Ctx context_;
 	};
 
 	template<typename Stream>
