@@ -6,7 +6,7 @@
 
 namespace luax {
 	inline void setfuncs(lua_State* L, const luaL_Reg* funcs) {
-#if LUA_VERSION_NUM >= 502 // LUA 5.2 or above
+#if LUAJIT_VERSION_NUM >= 20100 || LUA_VERSION_NUM >= 502 // LUA 5.2 or above
 		luaL_setfuncs(L, funcs, 0);
 #else
 		luaL_register(L, NULL, funcs);

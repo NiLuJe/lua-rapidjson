@@ -1,7 +1,7 @@
 #ifndef __LUA_RAPIDJSON_USERDATA_HPP__
 #define __LUA_RAPIDJSON_USERDATA_HPP__
 
-#include "lua.hpp"
+#include <lua.hpp>
 #include "luax.hpp"
 
 template <typename T>
