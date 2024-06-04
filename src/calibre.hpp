@@ -128,9 +128,6 @@ namespace calibre {
 
 			// We know how exactly many key-value pairs we'll want
 			lua_createtable(L, 0, required_fields.size());
-			// Mark as object.
-			luaL_getmetatable(L, "json.object");
-			lua_setmetatable(L, -2);
 
 			stack_.push_back(context_);
 			context_ = Ctx::Object();
@@ -171,9 +168,6 @@ namespace calibre {
 			}
 
 			lua_newtable(L);
-			// Mark as array.
-			luaL_getmetatable(L, "json.array");
-			lua_setmetatable(L, -2);
 
 			stack_.push_back(context_);
 			context_ = Ctx::Array();
