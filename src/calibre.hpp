@@ -116,9 +116,8 @@ namespace calibre {
 			return true;
 		}
 		bool StartObject() {
-			depth++;
 			// We only want the book object, not any of the nested ones.
-			if (depth > 1) {
+			if (depth++ > 0) {
 				return true;
 			}
 
@@ -126,7 +125,7 @@ namespace calibre {
 				return false;
 			}
 
-			// We know how exactly many key-value pairs we'll want
+			// We know exactly how many key-value pairs we'll want
 			lua_createtable(L, 0, required_fields.size());
 
 			stack_.push_back(context_);
@@ -145,10 +144,8 @@ namespace calibre {
 			return true;
 		}
 		bool EndObject(rapidjson::SizeType memberCount) {
-			depth--;
-
 			// We only create the top-level object
-			if (depth > 0) {
+			if (--depth > 0) {
 				return true;
 			}
 
