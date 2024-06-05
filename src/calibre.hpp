@@ -116,7 +116,7 @@ namespace calibre {
 			return true;
 		}
 		bool StartObject() {
-			// We only want the book object, not any of the nested ones.
+			// We only want the book object @ depth 0 (pre-increment), not any of the nested ones.
 			if (depth++ > 0) {
 				return true;
 			}
@@ -125,7 +125,7 @@ namespace calibre {
 				return false;
 			}
 
-			// We know exactly how many key-value pairs we'll want
+			// We know exactly how many key-value pairs we'll need
 			lua_createtable(L, 0, required_fields.size());
 
 			stack_.push_back(context_);
@@ -134,7 +134,8 @@ namespace calibre {
 		}
 		bool Key(const char* str, rapidjson::SizeType length, bool copy) const {
 			// We only care about a few specific fields
-			// NOTE: contains is C++20 ;'(. But it's a set, so this can only ever be 0 or 1.
+			// NOTE: contains is C++20 ;'(.
+			//       But This is a set, so this can only ever return 0 or 1.
 			if (required_fields.count(str)) {
 				lua_pushlstring(L, str, length);
 				required_field = true;
@@ -144,7 +145,7 @@ namespace calibre {
 			return true;
 		}
 		bool EndObject(rapidjson::SizeType memberCount) {
-			// We only create the top-level object
+			// We only create the book-level object
 			if (--depth > 0) {
 				return true;
 			}
@@ -155,7 +156,7 @@ namespace calibre {
 			return true;
 		}
 		bool StartArray() {
-			// We want the top-level array ;).
+			// We *also* want the top-level array, when we don't actually have field info yet ;).
 			if (!required_field && depth > 0) {
 				return true;
 			}
@@ -171,6 +172,7 @@ namespace calibre {
 			return true;
 		}
 		bool EndArray(rapidjson::SizeType elementCount) {
+			// Same logic as in StartArray
 			if (!required_field && depth > 0) {
 				return true;
 			}
