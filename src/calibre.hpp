@@ -121,6 +121,7 @@ namespace calibre {
 				return true;
 			}
 
+			// Ensure we have space for a new table on the (Lua) stack
 			if (!lua_checkstack(L, 1)) {
 				return false;
 			}
@@ -128,6 +129,7 @@ namespace calibre {
 			// We know exactly how many key-value pairs we'll need
 			lua_createtable(L, 0, required_fields.size());
 
+			// Switch to the object (i.e., hash) context
 			stack_.push_back(context_);
 			context_ = Ctx::Object();
 			return true;
@@ -135,7 +137,7 @@ namespace calibre {
 		bool Key(const char* str, rapidjson::SizeType length, bool copy) const {
 			// We only care about a few specific fields
 			// NOTE: contains is C++20 ;'(.
-			//       But This is a set, so this can only ever return 0 or 1.
+			//       But this is a set, so this can only ever return 0 or 1.
 			if (required_fields.count(str)) {
 				lua_pushlstring(L, str, length);
 				required_field = true;
@@ -150,6 +152,7 @@ namespace calibre {
 				return true;
 			}
 
+			// Switch back to the previous context
 			context_ = stack_.back();
 			stack_.pop_back();
 			context_.submit(L);
@@ -161,12 +164,14 @@ namespace calibre {
 				return true;
 			}
 
+			// Ensure we have space for a new table on the (Lua) stack
 			if (!lua_checkstack(L, 1)) {
 				return false;
 			}
 
 			lua_newtable(L);
 
+			// Switch to the array context
 			stack_.push_back(context_);
 			context_ = Ctx::Array();
 			return true;
@@ -177,6 +182,7 @@ namespace calibre {
 				return true;
 			}
 
+			// Switch back to the previous context
 			assert(elementCount == context_.index_);
 			context_ = stack_.back();
 			stack_.pop_back();
@@ -218,12 +224,12 @@ namespace calibre {
 
 			static void objectFn(lua_State* L, Ctx* ctx)
 			{
-				lua_rawset(L, -3);
+				lua_rawset(L, -3);	// t[k] = v (i.e., hash)
 			}
 
 			static void arrayFn(lua_State* L, Ctx* ctx)
 			{
-				lua_rawseti(L, -2, ++ctx->index_);
+				lua_rawseti(L, -2, ++ctx->index_);	// t[n] = v (i.e., array)
 			}
 			static void topFn(lua_State* L, Ctx* ctx)
 			{
