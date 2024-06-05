@@ -121,11 +121,6 @@ namespace calibre {
 				return true;
 			}
 
-			// Ensure we have space for a new table on the (Lua) stack
-			if (!lua_checkstack(L, 1)) {
-				return false;
-			}
-
 			// We know exactly how many key-value pairs we'll need
 			lua_createtable(L, 0, required_fields.size());
 
@@ -162,11 +157,6 @@ namespace calibre {
 			// We *also* want the top-level array, when we don't actually have field info yet ;).
 			if (!required_field && depth > 0) {
 				return true;
-			}
-
-			// Ensure we have space for a new table on the (Lua) stack
-			if (!lua_checkstack(L, 1)) {
-				return false;
 			}
 
 			lua_newtable(L);
