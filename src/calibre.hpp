@@ -225,11 +225,13 @@ namespace calibre {
 			static void objectFn(lua_State* L, Ctx* ctx)
 			{
 				lua_rawset(L, -3);	// t[k] = v (i.e., hash)
+														// t@-3[-2] = -1 (i.e., v @ the top, k below it; both get pop'ed)
 			}
 
 			static void arrayFn(lua_State* L, Ctx* ctx)
 			{
 				lua_rawseti(L, -2, ++ctx->index_);	// t[n] = v (i.e., array)
+																						// t@-2[index] = -1 (i.e., v @ the top, gets pop'ed)
 			}
 			static void topFn(lua_State* L, Ctx* ctx)
 			{
