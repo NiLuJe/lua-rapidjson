@@ -134,6 +134,9 @@ namespace calibre {
 
 			// We know exactly how many key-value pairs we'll need
 			lua_createtable(L, 0, required_fields.size());
+			// Mark table as a JSON object (used when dumping back to JSON)
+			luaL_getmetatable(L, "json.object");
+			lua_setmetatable(L, -2);
 
 			// Switch to the object (i.e., hash) context
 			stack_.push_back(context_);
@@ -171,6 +174,9 @@ namespace calibre {
 			}
 
 			lua_newtable(L);
+			// Mark table as a JSON array
+			luaL_getmetatable(L, "json.array");
+			lua_setmetatable(L, -2);
 
 			// Switch to the array context
 			stack_.push_back(context_);
