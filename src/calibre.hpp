@@ -123,7 +123,7 @@ namespace calibre {
 				//       We've seen examples where a required_field that should have been an array is instead described as an empty *object*,
 				//       c.f., https://github.com/koreader/koreader/pull/11922#issuecomment-2152799500
 				//       As we've currently got a key at the top of the Lua stack, one that we'll potentially never submit because of the heuristics,
-				//       pop it *right now* to avoid unbalancing the Lua stack.
+				//       pop it *right now* to avoid leaving it dangling and unbalancing the Lua stack.
 				if (required_field) {
 					lua_pop(L, 1);
 					// Also, unflag the field as required so as not to submit *anything* from that object, in case it isn't actually empty.
