@@ -240,7 +240,7 @@ namespace calibre {
 		};
 
 		mutable bool required_field;
-		size_t depth;
+		rapidjson::SizeType depth;
 		const std::unordered_set<std::string> required_fields {
 			"authors",
 			"last_modified",
