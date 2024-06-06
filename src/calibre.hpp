@@ -118,6 +118,18 @@ namespace calibre {
 		bool StartObject() {
 			// We only want the book object @ depth 0 (pre-increment), not any of the nested ones.
 			if (depth++ > 0) {
+				// NOTE: If we encounter an object as the value of a required_field, the input file is malformed,
+				//       as none of our required_fields should ever be objects ;).
+				//       We've seen examples where a required_field that should have been an array is instead described as an empty *object*,
+				//       c.f., https://github.com/koreader/koreader/pull/11922#issuecomment-2152799500
+				//       As we've currently got a key at the top of the Lua stack, one that we'll potentially never submit because of the heuristics,
+				//       push & submit a nil *right now* to avoid unbalancing the Lua stack.
+				if (required_field) {
+					values::push_null(L);
+					context_.submit(L);
+					// Also, unflag the field as required so as not to submit anything, in case the object isn't actually empty.
+					required_field = false;
+				}
 				return true;
 			}
 
@@ -144,13 +156,6 @@ namespace calibre {
 		bool EndObject(rapidjson::SizeType memberCount) {
 			// We only create the book-level object
 			if (--depth > 0) {
-				// NOTE: We've seen malformed files where a required_field that should have been an array is instead described as an empty *object*.
-				// c.f., https://github.com/koreader/koreader/pull/11922#issuecomment-2152799500
-				// Push & submit a nil to avoid unbalancing the Lua stack, as we've currently got a dangling key at the top of the stack.
-				if (required_field) {
-					values::push_null(L);
-					context_.submit(L);
-				}
 				return true;
 			}
 
