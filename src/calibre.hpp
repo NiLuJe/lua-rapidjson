@@ -125,7 +125,7 @@ namespace calibre {
 				//       As we've currently got a key at the top of the Lua stack, one that we'll potentially never submit because of the heuristics,
 				//       push & submit a nil *right now* to avoid unbalancing the Lua stack.
 				if (required_field) {
-					values::push_null(L);
+					lua_pushnil(L);
 					context_.submit(L);
 					// Also, unflag the field as required so as not to submit *anything* from that object, in case it isn't actually empty.
 					required_field = false;
