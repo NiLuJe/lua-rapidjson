@@ -127,7 +127,7 @@ namespace calibre {
 				if (required_field) {
 					values::push_null(L);
 					context_.submit(L);
-					// Also, unflag the field as required so as not to submit anything, in case the object isn't actually empty.
+					// Also, unflag the field as required so as not to submit *anything* from that object, in case it isn't actually empty.
 					required_field = false;
 				}
 				return true;
