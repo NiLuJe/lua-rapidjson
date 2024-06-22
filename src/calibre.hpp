@@ -256,7 +256,7 @@ namespace calibre {
 			"size",
 			"tags",
 			"title",
-			"uuid ",
+			"uuid",
 		};
 
 		lua_State* L;
